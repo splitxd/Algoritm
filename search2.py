@@ -31,21 +31,37 @@ def boyer_moore_search(text, pattern):
     m = len(pattern)
     if m == 0: return []
 
-    bad_char = {pattern[i]: i for i in range(m)}
+    bad_char = {char: m - i - 1 for i, char in enumerate(pattern[:-1])}
+    bad_char.setdefault(pattern[-1], m)
+    bad_char.setdefault('*', m)
+
+    suffix_shift = [m] * m
+    last_prefix_position = m
+
+    for i in range(m - 1, -1, -1):
+        if pattern[i:] == pattern[:m - i]:
+            last_prefix_position = i
+        suffix_shift[i] = last_prefix_position + (m - 1 - i)
+
+    for i in range(m - 1):
+        len_suffix = m - 1 - i
+        suffix_shift[m - 1 - len_suffix] = min(suffix_shift[m - 1 - len_suffix],
+                                               len_suffix + bad_char.get(pattern[i], m))
 
     positions = []
     s = 0
     while s <= n - m:
         j = m - 1
-
         while j >= 0 and pattern[j] == text[s + j]:
             j -= 1
 
         if j < 0:
             positions.append(s)
-            s += (m - bad_char.get(text[s + m], -1)) if s + m < n else 1
+            s += suffix_shift[0]
         else:
-            s += max(1, j - bad_char.get(text[s + j], -1))
+            bad_char_shift = bad_char.get(text[s + j], m)
+            good_suffix_shift = suffix_shift[j]
+            s += max(bad_char_shift, good_suffix_shift)
     return positions
 
 
@@ -109,3 +125,6 @@ rk_time = measure_time(rabin_karp_search)
 print(f"Простой поиск: {naive_time:.6f} сек")
 print(f"Бойер-Мур: {bm_time:.6f} сек")
 print(f"Рабин-Карп: {rk_time:.6f} сек")
+
+
+boyer_moore_search('ABCDABCDABDE', 'DABD')
