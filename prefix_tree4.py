@@ -2,6 +2,7 @@ class TrieNode:
     def __init__(self):
         self.children = {}
         self.is_end_of_word = False
+        self.value = None
 
 
 class Trie:
@@ -16,14 +17,25 @@ class Trie:
                 node.children[char] = TrieNode()
             node = node.children[char]
         node.is_end_of_word = True
+        node.value = word
 
-    def search(self, word: str):
+    def get(self,word:str):
+        node = self._search(word)
+        if node and node.is_end_of_word:
+            return node.value
+        return "NOT FOUND"
+
+    def search(self, key: str):
+        node = self._search(key)
+        return node is not None and node.is_end_of_word
+
+    def _search(self, word: str):
         node = self.root
         for char in word:
             if char not in node.children:
                 return False
             node = node.children[char]
-        return node.is_end_of_word
+        return node
 
     def search_prefix(self, prefix: str):
         node = self.root
@@ -41,12 +53,13 @@ class Trie:
             if not node.is_end_of_word:
                 return False
             node.is_end_of_word = False
+            node.value = None
             return len(node.children) == 0
         char = word[index]
-        n = node.children.get(char)
-        if n is None:
+        next_node = node.children.get(char)
+        if next_node is None:
             return False
-        should_delete_node = self._delete(n, word, index + 1)
+        should_delete_node = self._delete(next_node, word, index + 1)
 
         if should_delete_node:
             del node.children[char]
@@ -93,8 +106,8 @@ if __name__ == "__main__":
     trie.insert("appetizer")
     trie.insert("apple")
 
-    print(trie.search("apple"))
-    print(trie.search("pineapple"))
+    print(trie.get("apple"))
+    print(trie.get("pineapple"))
     print()
 
     print(trie.search_prefix("ban"))
@@ -109,7 +122,7 @@ if __name__ == "__main__":
     print()
 
     trie.delete("apple")
-    print(trie.search("apple"))
+    print(trie.get("apple"))
     print(trie.list_words())
 
 
