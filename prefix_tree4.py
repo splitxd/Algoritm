@@ -1,3 +1,7 @@
+import time
+import random
+import string
+
 class TrieNode:
     def __init__(self):
         self.children = {}
@@ -98,32 +102,24 @@ class Trie:
 
         return words
 
+def random_word(length=8):
+    return ''.join(random.choices(string.ascii_lowercase, k=length))
+
 if __name__ == "__main__":
-    trie = Trie()
-    trie.insert("apple")
-    trie.insert("app")
-    trie.insert("banana")
-    trie.insert("appetizer")
-    trie.insert("apple")
+    trie_dict = Trie()
+    num_items = 100_000
+    words = [random_word() for _ in range(num_items)]
 
-    print(trie.get("apple"))
-    print(trie.get("pineapple"))
-    print()
+    print("Вставка")
+    start = time.time()
+    for i, word in enumerate(words):
+        trie_dict.insert(word)
+    print(time.time() - start)
 
-    print(trie.search_prefix("ban"))
-    print(trie.search_prefix("go"))
-    print()
-
-    print(trie.startswith("app"))
-    print(trie.startswith("ban"))
-    print()
-
-    print(trie.list_words())
-    print()
-
-    trie.delete("apple")
-    print(trie.get("apple"))
-    print(trie.list_words())
+    print("Поиск")
+    start = time.time()
+    found = sum(1 for word in words if trie_dict.search(word))
+    print(time.time() - start)
 
 
 
